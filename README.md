@@ -63,7 +63,7 @@ replication result.
 | Vega vs analytic | 37.5052 vs 37.5240 |
 | Theta vs analytic | −0.017567 vs −0.017573 per day |
 
-![Convergence](convergence.png)
+![Convergence](Convergence.png)
 
 An option's payoff has a sharp corner at the strike price. When the
 number of steps is even there is a node sitting exactly at K (here,
@@ -72,7 +72,8 @@ The price therefore alternates between being a notch too high and a
 notch too low depending on the step count, rather than converging
 smoothly.
 
-![Greeks](greeks.png)
+[Greeks]<img width="567" height="432" alt="Convergence" src="https://github.com/user-attachments/assets/68d7855e-d6ae-4e67-9d68-3c355f15a748" />
+
 
 **Delta** is computed as the slope of the option value with respect to
 the stock price. It follows the shape of a cumulative distribution
