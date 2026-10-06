@@ -51,6 +51,8 @@ Gamma: gamma was computed by taking the slope of the delta function. As the stoc
 Vega: vega is the change in price per unit of volatility. At the strike price, a change in volatility could put me far in the money or far out of the money. That is why we see such a high vega when the stock approaches strike price. Volatility matters more at the strike price than anywhere else.
 Theta: theta measures time decay, or how the options value changes as maturity is approached. When far out of the money, the options value does not change much as the value is already very low. Far in the money, with r > 0, the option's value increases as maturity is closer and the put is very likely to be exercised. The strike then acts like something that is owed to whoever owns the put, and the discount shrinks as expiry nears, increasing the value of the option as maturity nears. If r=0 the discount disappears. However, when it's slighlty out of the money, it decreases the most, as uncertainty of what is going to happen is at its highest.
 
+
+ ## Model limits
 The tree requires `d < exp(rΔt) < u`, which under CRR reduces to
 
     r·√Δt < σ
@@ -94,3 +96,5 @@ repricing. Not implemented.
 
 Hull, *Options, Futures and Other Derivatives*, ch. on binomial trees.
 Cox, Ross and Rubinstein (1979).
+Lo, A. *Options, Part III*, 15.401 Finance Theory I, MIT OpenCourseWare
+  https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/
