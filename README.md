@@ -72,7 +72,7 @@ The price therefore alternates between being a notch too high and a
 notch too low depending on the step count, rather than converging
 smoothly.
 
-[Greeks](Greeks.png)
+![Greeks](Greeks.png)
 
 **Delta** is computed as the slope of the option value with respect to
 the stock price. It follows the shape of a cumulative distribution
