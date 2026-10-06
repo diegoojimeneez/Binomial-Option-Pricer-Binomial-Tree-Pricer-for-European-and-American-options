@@ -13,6 +13,17 @@ Black-Scholes reference implementation for validation.
 - Black-Scholes closed form for comparison
 - No-arbitrage guard on the risk-neutral probability
 
+## Setup
+
+Requires Python 3.9+ and three packages:
+
+```bash
+pip install numpy scipy matplotlib
+```
+
+`numpy` for the tree, `scipy` for the normal CDF in Black-Scholes, and
+`matplotlib` for the charts.
+
 ## Usage
 
 ```python
@@ -24,7 +35,19 @@ option.delta()
 
 ## Method
 
-Terminal prices were calculated with s0 * (u ^ j) * (d ^ (n-j)) to get the payoff of an option for a given strike price and option type. Backward induction was used to get the value of the option starting at the last step (n) finishing at step 0 by multiplying the discount factor by the risk-neutral probability of an up move and a down move on the option's value: e^{-rΔt}[p*V_up + (1-p)*V_down]. Risk-neutral probabilities make the stock's expected growth equal the risk-free rate. The option's value equals the cost of a portfolio holding the underlying stock and cash that reproduces its payoff.
+Terminal stock prices are computed directly as `s0 * u^j * d^(n-j)`, then
+converted to payoffs for the given strike and option type. Backward
+induction then works from the last step (n) to step 0, which holds the
+price today. Each node's value is the discounted, risk-neutral-weighted
+average of its two children:
+
+    e^(-rΔt) [ p·V_up + (1-p)·V_down ]
+
+The risk-neutral probability `p` is the weight that makes the stock's
+expected growth equal the risk-free rate. It is not a forecast: the
+option's value equals the cost of a portfolio of stock and cash that
+reproduces its payoff, and `p` is the algebraic rearrangement of that
+replication result.
 
 ## Validation
 
@@ -42,29 +65,51 @@ Terminal prices were calculated with s0 * (u ^ j) * (d ^ (n-j)) to get the payof
 
 ![Convergence](convergence.png)
 
-An option's payoff has a sharp corner at the strike price. When the steps are even there's a node in the tree equal to K, when n is odd the strike price falls between two nodes. Therefore, the price alternates between being a notch too high or too low depending on the step.
+An option's payoff has a sharp corner at the strike price. When the
+number of steps is even there is a node sitting exactly at K (here,
+because K = s0); when it is odd, the strike falls between two nodes.
+The price therefore alternates between being a notch too high and a
+notch too low depending on the step count, rather than converging
+smoothly.
 
 ![Greeks](greeks.png)
 
-Delta: delta is computed by taking the slope of the option value. We can see how it assimilates to the cumulative distribution function, where with low stock prices the option delta was moving almost at par with the stock. 
-Gamma: gamma was computed by taking the slope of the delta function. As the stock approaches strike price gamma shoots up and peaks. 
-Vega: vega is the change in price per unit of volatility. At the strike price, a change in volatility could put me far in the money or far out of the money. That is why we see such a high vega when the stock approaches strike price. Volatility matters more at the strike price than anywhere else.
-Theta: theta measures time decay, or how the options value changes as maturity is approached. When far out of the money, the options value does not change much as the value is already very low. Far in the money, with r > 0, the option's value increases as maturity is closer and the put is very likely to be exercised. The strike then acts like something that is owed to whoever owns the put, and the discount shrinks as expiry nears, increasing the value of the option as maturity nears. If r=0 the discount disappears. However, when it's slighlty out of the money, it decreases the most, as uncertainty of what is going to happen is at its highest.
+**Delta** is computed as the slope of the option value with respect to
+the stock price. It follows the shape of a cumulative distribution
+function: at low stock prices the put's delta approaches −1, so the
+option moves almost one-for-one against the stock.
 
+**Gamma** is the slope of the delta curve. It peaks as the stock
+approaches the strike, which is where delta changes fastest.
 
- ## Model limits
+**Vega** is the change in price per unit of volatility. Near the strike,
+a change in volatility could leave the option far in or far out of the
+money, so volatility matters more there than anywhere else — hence the
+peak.
+
+**Theta** measures the effect of time passing. Far out of the money the
+value barely moves, since there is little value left to lose. Far in the
+money with `r > 0`, theta is positive: exercise is near-certain, so the
+put behaves like a claim on the strike at expiry, and as expiry
+approaches that claim is discounted less. Setting `r = 0` removes the
+discount and the positive region disappears, confirming the cause. The
+most negative theta sits slightly out of the money, where uncertainty
+about the outcome is greatest.
+
+## Model limits
+
 The tree requires `d < exp(rΔt) < u`, which under CRR reduces to
 
     r·√Δt < σ
 
 If violated, the risk-neutral probability falls outside [0, 1] and the
-model returns meaningless prices without error. Example: `r=0.5,
-σ=0.02, n=1` gives `p = 16.71` and a price of −18.87.
+model returns meaningless prices without error. Example: `r=0.5`,
+`σ=0.02`, `n=1` gives `p = 16.71` and a price of −18.87.
 
 A guard raises `ValueError` when `p` leaves [0, 1].
 
-Note this depends on `n`: the same `r` and `σ` can be invalid at a
-coarse tree and valid at a fine one, since `√Δt` shrinks as steps are
+Note this depends on `n`: the same `r` and `σ` can be invalid on a
+coarse tree and valid on a fine one, since `√Δt` shrinks as steps are
 added.
 
 ## Known issue: gamma
@@ -94,7 +139,7 @@ repricing. Not implemented.
 
 ## References
 
-Hull, *Options, Futures and Other Derivatives*, ch. on binomial trees.
-Cox, Ross and Rubinstein (1979).
-Lo, A. *Options, Part III*, 15.401 Finance Theory I, MIT OpenCourseWare
+- Hull, J. *Options, Futures and Other Derivatives* — chapter on binomial trees.
+- Cox, J., Ross, S. and Rubinstein, M. (1979). "Option Pricing: A Simplified Approach."
+- Lo, A. *Options, Part III*, 15.401 Finance Theory I, MIT OpenCourseWare.
   https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/
